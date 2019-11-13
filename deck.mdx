@@ -1,0 +1,109 @@
+import myTheme from './theme'
+
+export const theme = myTheme
+
+# Hello Github Actions :wave:
+
+<br/>
+
+<a href="https://chitacan.io" target="_blank">@chitacan</a>
+
+---
+
+<img width="400" src="https://user-images.githubusercontent.com/286950/43199459-fd887db2-904c-11e8-8069-6fec4a41347d.png"/>
+
+사업에 쓰이는 모든 기술에 적용되는 두가지 규칙
+
+* <small>효율적인 작업에 사용된 자동화는 효율성을 극대화 한다.</small>
+* <small>비효율적인 작업에 사용된 자동화는 비효율성을 극대화 한다.</small>
+
+---
+
+## Github Actions
+
+Github 의 이벤트에 맞춰 우리가 정의한 작업흐름<sup>(이하 workflow)</sup>을 실행할 수 있는 플랫폼
+
+* [Webhook](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows) 과 거의 유사한 이벤트들을 지원합니다.
+  * PR 작성 & 업데이트, Comment 작성, Label 추가 등등
+* Github 이 제공하는 환경에서 실행할 수 있습니다.
+  * 필요하면 [우리가 직접 구축한 서버](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-self-hosted-runners)를 사용할 수 있습니다.
+* Github 에서 기존에 제공했던 oauth, apps 보다 훨씬 쉽게 workflow 를 구현하고 실행할 수 있습니다.
+  * CI, CD + 자동화 :wrench::wrench::wrench:
+
+---
+
+## Simple Workflow
+
+```
+name: Greet Everyone
+on: [push]
+
+jobs:
+  build:
+    name: Greeting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hello world
+        uses: actions/hello-world-javascript-action@v1
+        with:
+          who-to-greet: 'Mona the Octocat'
+        id: hello
+      - name: Echo the greeting's time
+        run: echo 'The time was ${{ steps.hello.outputs.time }}.'
+```
+
+---
+
+## Call Github API
+
+```
+name: label on comment
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  build:
+    name: Greeting
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -X "POST" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d '{"labels": ["bug"]}'
+```
+
+---
+
+## 용어
+
+* action
+  * Github Action**s** 를 구성하는 가장 기본적인 단위, `run`
+  * [js](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-a-javascript-action) 또는 [docker](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-a-docker-container-action) 로 직접 만들고 [공유할 수 있다.](https://github.com/marketplace?type=actions)
+* step
+  * action, 명령어들을 실행하는 단위
+  * 같은 job 내의 step 은 같은 환경을 공유
+* job
+  * 각각의 job 은 격리된 환경에서 실행됨
+  * 동시에 실행되거나 의존성을 가지고 순서대로 실행될 수 있습니다.
+* workflow
+  * 여러 job 으로 구성됩니다.
+  * event 에 의해 실행될 수 있습니다.
+* secret
+
+---
+
+## 사용하고 있는 곳들
+
+* [cpu.chain.partners 배포](https://github.com/chain-partners/cpu.chain.partners)
+* [daybit-images 의 이미지 생성](https://github.com/chain-partners/daybit-images)
+
+---
+
+## :bulb: 아이디어들
+
+* Github ↔️ Kanbanize sync
+* [Pull Request lint](https://user-images.githubusercontent.com/286950/68704787-39d7c580-05d0-11ea-866a-3fe2096df7c1.png)
+* milestone 자동화
